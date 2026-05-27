@@ -44,30 +44,108 @@ export default function AuthPage() {
 
   const handleLogin = async () => {
     const { identifier, password } = loginForm;
+
     if (!identifier || !password) {
-      setLoginStatus({ msg: "> ERROR: All fields are required.", type: "err" });
+      setLoginStatus({
+        msg: "> ERROR: All fields are required.",
+        type: "err",
+      });
+
       return;
     }
+
     setLoginLoading(true);
-    setLoginStatus({ msg: "> Verifying credentials, please wait...", type: "ok" });
-    await new Promise(r => setTimeout(r, 1500));
-    setLoginLoading(false);
-    setLoginSuccess(true);
-    setLoginStatus({ msg: `> Welcome back, ${identifier}!`, type: "ok" });
+
+    try {
+      const response = await fetch(
+        "http://localhost:8000/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(loginForm),
+        }
+      );
+
+      const data = await response.json();
+
+      setLoginLoading(false);
+
+      if (data.success) {
+        setLoginSuccess(true);
+
+        setLoginStatus({
+          msg: `> ${data.message}`,
+          type: "ok",
+        });
+
+        console.log(data.user);
+      } else {
+        setLoginStatus({
+          msg: `> ERROR: ${data.message}`,
+          type: "err",
+        });
+      }
+    } catch (error) {
+      console.error("FULL LOGIN ERROR:", error);
+
+      setLoginLoading(false);
+
+      setLoginStatus({
+        msg: "> ERROR: Cannot connect to server.",
+        type: "err",
+      });
+    }
   };
 
-  const handleSignup = () => {
+  const handleSignup = async () => {
     const { fullName, username, email, phone, password } = signupForm;
+
     if (!fullName || !username || !email || !phone || !password) {
-      setSignupStatus({ msg: "> ERROR: All fields are required.", type: "err" });
+      setSignupStatus({
+        msg: "> ERROR: All fields are required.",
+        type: "err",
+      });
+
       return;
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setSignupStatus({ msg: "> ERROR: Invalid email address.", type: "err" });
-      return;
+
+    try {
+      const response = await fetch(
+        "http://localhost:8000/signup",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(signupForm),
+        }
+      );
+
+      const data = await response.json();
+
+      if (data.success) {
+        setSignupSuccess(true);
+
+        setSignupStatus({
+          msg: `> ${data.message}`,
+          type: "ok",
+        });
+      } else {
+        setSignupStatus({
+          msg: `> ERROR: ${data.message}`,
+          type: "err",
+        });
+      }
+    } catch (error) {
+      console.error("FULL SIGNUP ERROR:", error);
+
+      setSignupStatus({
+        msg: "> ERROR: Cannot connect to server.",
+        type: "err",
+      });
     }
-    setSignupSuccess(true);
-    setSignupStatus({ msg: `> Signup successful! Welcome to Lumino, ${fullName}!`, type: "ok" });
   };
 
   const switchMode = (newMode) => {
@@ -102,7 +180,6 @@ export default function AuthPage() {
 
       <div className="auth-card">
 
-        {/* ── TABS ── */}
         <div className="auth-tabs">
           <button className={`auth-tab ${mode === "login" ? "active" : ""}`} onClick={() => switchMode("login")}>
             Log In
@@ -112,7 +189,6 @@ export default function AuthPage() {
           </button>
         </div>
 
-        {/* ── LOGIN ── */}
         {mode === "login" && (
           <div className="auth-form">
             <p className="auth-subtitle">Welcome back. Log in to continue.</p>
@@ -168,7 +244,6 @@ export default function AuthPage() {
           </div>
         )}
 
-        {/* ── SIGNUP ── */}
         {mode === "signup" && (
           <div className="auth-form">
             <p className="auth-subtitle">Create your account and find your next gig.</p>
