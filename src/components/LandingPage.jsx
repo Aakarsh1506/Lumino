@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import "./LandingPage.css";
 import bgImage from '../assets/Landing Page Background 2 - Lumino.jpg'
+import { useNavigate } from 'react-router-dom'
 
 export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
   const [scrolledFull, setScrolledFull] = useState(false);
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [cityOpen, setCityOpen] = useState(false);
+  const navigate = useNavigate();
   const heroRef = useRef(null);
 
   useEffect(() => {
@@ -18,6 +20,19 @@ export default function LandingPage() {
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const categories = [
+    { icon: "🎵", name: "Concerts" },
+    { icon: "🎤", name: "Standup Comedy" },
+    { icon: "🎬", name: "Movies" },
+    { icon: "🎭", name: "Theatre & Plays" },
+    { icon: "🎪", name: "Festivals" },
+    { icon: "🎸", name: "Open Mic" },
+    { icon: "🕺", name: "Club Nights" },
+    { icon: "🎨", name: "Art & Exhibitions" },
+    { icon: "🏟️", name: "Sports Events" },
+    { icon: "🎧", name: "DJ Nights" },
+  ];
 
   return (
     <>
@@ -33,16 +48,18 @@ export default function LandingPage() {
           >
             <button className="nav-link">Categories ▾</button>
             <div className={`dropdown-menu ${categoryOpen ? "open" : ""}`}>
-              <a href="#">Concerts</a>
-              <a href="#">Standup Comedy</a>
-              <a href="#">Movies</a>
-              <a href="#">Theatre & Plays</a>
-              <a href="#">Festivals</a>
-              <a href="#">Open Mic</a>
-              <a href="#">Club Nights</a>
-              <a href="#">Art & Exhibitions</a>
-              <a href="#">Sports Events</a>
-              <a href="#">DJ Nights</a>
+              <div className="dropdown-inner">
+                <a href="#">🎵 Concerts</a>
+                <a href="#">🎤 Standup Comedy</a>
+                <a href="#">🎬 Movies</a>
+                <a href="#">🎭 Theatre & Plays</a>
+                <a href="#">🎪 Festivals</a>
+                <a href="#">🎸 Open Mic</a>
+                <a href="#">🕺 Club Nights</a>
+                <a href="#">🎨 Art & Exhibitions</a>
+                <a href="#">🏟️ Sports Events</a>
+                <a href="#">🎧 DJ Nights</a>
+              </div>
             </div>
           </div>
 
@@ -53,22 +70,24 @@ export default function LandingPage() {
           >
             <button className="nav-link">City ▾</button>
             <div className={`dropdown-menu ${cityOpen ? "open" : ""}`}>
-              <a href="#">Mumbai</a>
-              <a href="#">Delhi</a>
-              <a href="#">Bangalore</a>
-              <a href="#">Hyderabad</a>
-              <a href="#">Chennai</a>
-              <a href="#">Pune</a>
-              <a href="#">Kolkata</a>
-              <a href="#">Ahmedabad</a>
-              <a href="#">Jaipur</a>
-              <a href="#">Goa</a>
+              <div className="dropdown-inner">
+                <a href="#">📍 Mumbai</a>
+                <a href="#">📍 Delhi</a>
+                <a href="#">📍 Bangalore</a>
+                <a href="#">📍 Hyderabad</a>
+                <a href="#">📍 Chennai</a>
+                <a href="#">📍 Pune</a>
+                <a href="#">📍 Kolkata</a>
+                <a href="#">📍 Ahmedabad</a>
+                <a href="#">📍 Jaipur</a>
+                <a href="#">📍 Goa</a>
+              </div>
             </div>
           </div>
 
           <div className="nav-divider" />
-          <button className="btn btn-outline">Log In</button>
-          <button className="btn btn-primary">Sign Up</button>
+          <button className="btn btn-outline" onClick={() => navigate('/auth')}>Log In</button>
+          <button className="btn btn-primary" onClick={() => navigate('/auth')}>Sign Up</button>
         </div>
       </nav>
 
@@ -85,8 +104,8 @@ export default function LandingPage() {
         </div>
 
         <div className={`hero-buttons ${scrolledFull ? "hidden" : ""}`}>
-          <button className="btn btn-outline">Log In</button>
-          <button className="btn btn-primary">Sign Up</button>
+          <button className="btn btn-outline" onClick={() => navigate('/auth')}>Log In</button>
+          <button className="btn btn-primary" onClick={() => navigate('/auth')}>Sign Up</button>
         </div>
 
         <div className={`scroll-hint ${scrolled ? "hidden" : ""}`}>
@@ -97,12 +116,22 @@ export default function LandingPage() {
 
       {/* ── MAIN CONTENT ── */}
       <main className="main-content">
-        <div className="content-placeholder">
+        <div className="main-top">
           <h2>Find the gig that moves you.</h2>
-          <p>
-            From underground jazz sets to rooftop raves — Lumino surfaces every
-            live experience happening near you, before it sells out.
-          </p>
+          <p>From underground jazz sets to rooftop raves — Lumino surfaces every live experience happening near you, before it sells out.</p>
+        </div>
+
+        <div className="category-grid">
+          {categories.map((cat) => (
+            <button
+              key={cat.name}
+              className="category-card"
+              onClick={(e) => e.preventDefault()}
+            >
+              <span className="category-icon">{cat.icon}</span>
+              <span className="category-name">{cat.name}</span>
+            </button>
+          ))}
         </div>
       </main>
 
