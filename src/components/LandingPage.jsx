@@ -38,7 +38,13 @@ export default function LandingPage() {
     <>
       {/* ── NAVBAR ── */}
       <nav className={`navbar ${scrolled ? "scrolled" : ""}`}>
-        <span className="nav-logo visible-initial">Lumino.</span>
+        <span
+          className="nav-logo visible-initial"
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          style={{ cursor: "pointer" }}
+        >
+          Lumino.
+        </span>
 
         <div className="nav-right-group">
           <div
@@ -126,7 +132,7 @@ export default function LandingPage() {
             <button
               key={cat.name}
               className="category-card"
-              onClick={(e) => e.preventDefault()}
+              onClick={() => navigate('/auth')}
             >
               <span className="category-icon">{cat.icon}</span>
               <span className="category-name">{cat.name}</span>
