@@ -1,12 +1,9 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./Dashboard.css";
 
 // ── API KEYS ──
 const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY;
-const APIFY_TOKEN = import.meta.env.VITE_APIFY_TOKEN;
-const APIFY_ACTOR_ID = import.meta.env.VITE_APIFY_ACTOR_ID;
-
 const TMDB_IMG = "https://image.tmdb.org/t/p/w500";
 
 const categories = [
@@ -25,36 +22,65 @@ const categories = [
 function getGreeting(name) {
   const hour = new Date().getHours();
   let period = "Morning";
+
   if (hour >= 12 && hour < 17) period = "Afternoon";
   else if (hour >= 17) period = "Evening";
+
   return `Good ${period}, ${name}.`;
 }
 
-// ── MOVIE CARD (TMDB) ──
-function MovieCard({ movie }) {
-  const posterUrl = movie.poster_path ? `${TMDB_IMG}${movie.poster_path}` : null;
-  const rating = movie.vote_average ? (movie.vote_average / 2).toFixed(1) : null;
+// ── MOVIE CARD ──
+function MovieCard({ movie, user }) {
+  const navigate = useNavigate();
+
+  const posterUrl = movie.poster_path
+    ? `${TMDB_IMG}${movie.poster_path}`
+    : null;
+
+  const rating = movie.vote_average
+    ? (movie.vote_average / 2).toFixed(1)
+    : null;
+
   const votes = movie.vote_count
     ? movie.vote_count >= 1000
       ? `${(movie.vote_count / 1000).toFixed(1)}K+`
       : `${movie.vote_count}`
     : null;
-  const genres = movie.genre_names?.join(" / ") || movie.original_language?.toUpperCase() || "";
+
+  const genres =
+    movie.genre_names?.join(" / ") ||
+    movie.original_language?.toUpperCase() ||
+    "";
 
   return (
-    <div className="movie-card">
+    <div
+      className="movie-card"
+      onClick={() =>
+        navigate(`/movie/${movie.id}`, {
+          state: { movie, user },
+        })
+      }
+    >
       <div className="movie-poster">
         {posterUrl ? (
-          <img src={posterUrl} alt={movie.title} className="poster-img" />
+          <img
+            src={posterUrl}
+            alt={movie.title}
+            className="poster-img"
+          />
         ) : (
           <div className="poster-placeholder">🎬</div>
         )}
+
         <div className="movie-meta-overlay">
           {rating && votes && (
-            <span className="movie-rating">⭐ {rating}/5 &nbsp; {votes} Votes</span>
+            <span className="movie-rating">
+              ⭐ {rating}/5 &nbsp; {votes} Votes
+            </span>
           )}
         </div>
       </div>
+
       <div className="movie-info">
         <p className="movie-title">{movie.title}</p>
         <p className="movie-genre">{genres}</p>
@@ -63,49 +89,96 @@ function MovieCard({ movie }) {
   );
 }
 
-// ── EVENT CARD (EVENTBRITE) ──
-function EventCard({ event }) {
-  const imageUrl = event.logo?.url || null;
-  const venue = event.venue?.name || "";
-  const city = event.venue?.address?.city || "";
-  const date = event.start?.local
-    ? new Date(event.start.local).toLocaleDateString("en-IN", {
+// ── EVENT CARD ──
+function EventCard({ event, user }) {
+  const navigate = useNavigate();
+
+  const date = event.date
+    ? new Date(event.date).toLocaleDateString("en-IN", {
         day: "numeric",
         month: "short",
       })
     : "";
-  const subLabel = [city, date].filter(Boolean).join(" · ");
+
+  const subLabel = [event.city, date].filter(Boolean).join(" · ");
+
+  // COMPLETE EVENT OBJECT
+  const fullEvent = {
+    ...event,
+    title: event.name,
+    rating: event.rating || "4.8",
+    votes: event.votes || "12K+",
+    category: event.category || "Live Event",
+    language: event.language || "English",
+    duration: event.duration || "2h",
+    age: event.age || "16+",
+    price: event.price || "₹999 onwards",
+    description:
+      event.description ||
+      "Experience an unforgettable live event filled with entertainment, music, performances and amazing crowd energy.",
+    tagline:
+      event.tagline ||
+      "One night. One stage. Unlimited memories.",
+    venueDescription:
+      event.venueDescription ||
+      "This venue offers a premium live entertainment experience with excellent seating, sound, lighting and crowd facilities.",
+    artists:
+      event.artists || [
+        {
+          name: "Featured Artist",
+          role: "Performer",
+          image: event.image,
+        },
+      ],
+  };
 
   return (
-    <div className="movie-card">
+    <div
+      className="movie-card"
+      onClick={() =>
+        navigate(`/event/${event.id}`, {
+          state: {
+            event: fullEvent,
+            user,
+          },
+        })
+      }
+      style={{ cursor: "pointer" }}
+    >
       <div className="movie-poster">
-        {imageUrl ? (
-          <img src={imageUrl} alt={event.name?.text} className="poster-img" />
+        {event.image ? (
+          <img src={event.image} alt={event.name} className="poster-img" />
         ) : (
           <div className="poster-placeholder">🎫</div>
         )}
+
         {date && <div className="event-date-badge">{date}</div>}
-        {venue && (
+
+        {event.venue && (
           <div className="movie-meta-overlay">
-            <span className="movie-rating">📍 {venue}</span>
+            <span className="movie-rating">
+              📍 {event.venue}
+            </span>
           </div>
         )}
       </div>
+
       <div className="movie-info">
-        <p className="movie-title">{event.name?.text}</p>
+        <p className="movie-title">{event.name}</p>
         <p className="movie-genre">{subLabel}</p>
       </div>
     </div>
   );
 }
 
-// ── SKELETON LOADER ──
+// ── SKELETON ──
 function SkeletonRow() {
   return (
     <div className="movies-row">
       {[...Array(4)].map((_, i) => (
         <div className="movie-card" key={i}>
           <div className="skeleton-poster" />
+
           <div className="movie-info">
             <div className="skeleton-line long" />
             <div className="skeleton-line short" />
@@ -116,7 +189,7 @@ function SkeletonRow() {
   );
 }
 
-// ── ERROR STATE ──
+// ── ERROR ──
 function RowError({ message }) {
   return (
     <div className="row-error">
@@ -125,55 +198,178 @@ function RowError({ message }) {
   );
 }
 
-// ── PAGINATED ROW ──
+// -─ PAGINATION ──
 function PaginatedRow({ items, renderCard }) {
   const [page, setPage] = useState(0);
+
   const perPage = 4;
+
   const totalPages = Math.ceil(items.length / perPage);
-  const visible = items.slice(page * perPage, page * perPage + perPage);
+
+  const start = page * perPage;
+
+  const visibleItems = items.slice(start, start + perPage);
 
   return (
     <div className="paginated-row-wrapper">
+
       <div className="movies-row">
-        {visible.map((item, i) => renderCard(item, i))}
-        {/* fill empty slots so layout doesn't jump */}
-        {visible.length < perPage &&
-          [...Array(perPage - visible.length)].map((_, i) => (
-            <div className="movie-card invisible" key={`empty-${i}`} />
-          ))}
+
+        {visibleItems.map((item, index) => (
+          <div key={index}>
+            {renderCard(item)}
+          </div>
+        ))}
+
       </div>
+
       {totalPages > 1 && (
         <div className="row-pagination">
+
           <button
             className="page-arrow"
-            onClick={() => setPage((p) => Math.max(0, p - 1))}
             disabled={page === 0}
-            aria-label="Previous"
+            onClick={() => setPage((prev) => prev - 1)}
           >
             ‹
           </button>
+
           <span className="page-indicator">
             {page + 1} / {totalPages}
           </span>
+
           <button
             className="page-arrow"
-            onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
             disabled={page === totalPages - 1}
-            aria-label="Next"
+            onClick={() => setPage((prev) => prev + 1)}
           >
             ›
           </button>
+
         </div>
       )}
     </div>
   );
 }
 
+// ── EVENT DATA ──
+const STANDUP_EVENTS = [
+  {
+    id: 1,
+    title: "Zakir Khan Live",
+    image: "https://images.unsplash.com/photo-1585699324551-f6c309eedeca?w=400&q=80",
+    venue: "NCPA, Mumbai",
+    city: "Mumbai",
+    date: "2026-06-07",
+    rating: "4.9",
+    votes: "18K",
+    category: "Standup Comedy",
+    language: "Hindi",
+    duration: "2h",
+    age: "16+",
+    price: "₹999 onwards",
+    tagline: "Sakht Launda returns.",
+    description: "An evening filled with relatable storytelling, humour and iconic Zakir Khan moments.",
+    venueDescription: "NCPA Mumbai offers premium seating and a world-class live comedy experience.",
+    artists: [
+      {
+        name: "Zakir Khan",
+        role: "Comedian",
+        image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&q=80",
+      },
+    ],
+  },
+
+  {
+    id: 2,
+    title: "Comicstaan Auditions",
+    image: "https://images.unsplash.com/photo-1527224857830-43a7acc85260?w=400&q=80",
+    venue: "Canvas Laugh Club",
+    city: "Mumbai",
+    date: "2026-06-14",
+    rating: "4.5",
+    votes: "9K",
+    category: "Standup Comedy",
+    language: "English",
+    duration: "3h",
+    age: "18+",
+    price: "₹499 onwards",
+    tagline: "Find India's next comic star.",
+    description: "Watch aspiring comedians perform their best material live on stage.",
+    venueDescription: "Canvas Laugh Club is one of Mumbai's top comedy venues.",
+    artists: [
+      {
+        name: "Various Comics",
+        role: "Performers",
+        image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=80",
+      },
+    ],
+  },
+];
+
+const CONCERT_EVENTS = [
+  {
+    id: 101,
+    title: "Arijit Singh Live",
+    image: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=400&q=80",
+    venue: "DY Patil Stadium",
+    city: "Mumbai",
+    date: "2026-06-08",
+    rating: "4.9",
+    votes: "52K",
+    category: "Concert",
+    language: "Hindi",
+    duration: "4h",
+    age: "All Ages",
+    price: "₹2499 onwards",
+    tagline: "An unforgettable musical night.",
+    description: "Experience Arijit Singh performing his biggest hits live in Mumbai.",
+    venueDescription: "DY Patil Stadium is one of India's largest concert venues.",
+    artists: [
+      {
+        name: "Arijit Singh",
+        role: "Singer",
+        image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&q=80",
+      },
+    ],
+  },
+];
+
+const THEATRE_EVENTS = [
+  {
+    id: 201,
+    title: "Mughal-E-Azam: The Musical",
+    image: "https://images.unsplash.com/photo-1503095396549-807759245b35?w=400&q=80",
+    venue: "NCPA",
+    city: "Mumbai",
+    date: "2026-06-09",
+    rating: "4.8",
+    votes: "11K",
+    category: "Theatre",
+    language: "Hindi",
+    duration: "2h 30m",
+    age: "10+",
+    price: "₹1499 onwards",
+    tagline: "The legendary story comes alive.",
+    description: "A grand theatrical adaptation of the iconic Mughal-E-Azam.",
+    venueDescription: "NCPA Theatre features immersive stage productions.",
+    artists: [
+      {
+        name: "Theatre Ensemble",
+        role: "Cast",
+        image: "https://images.unsplash.com/photo-1544717305-2782549b5136?w=200&q=80",
+      },
+    ],
+  },
+];
+
 export default function Dashboard() {
+
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [cityOpen, setCityOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [showNavbar, setShowNavbar] = useState(true);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
 
@@ -181,379 +377,380 @@ export default function Dashboard() {
   const [moviesLoading, setMoviesLoading] = useState(true);
   const [moviesError, setMoviesError] = useState(null);
 
-  const [standup, setStandup] = useState([]);
-  const [standupLoading, setStandupLoading] = useState(true);
-  const [standupError, setStandupError] = useState(null);
-
-  const [concerts, setConcerts] = useState([]);
-  const [concertsLoading, setConcertsLoading] = useState(true);
-  const [concertsError, setConcertsError] = useState(null);
-
-  const [theatre, setTheatre] = useState([]);
-  const [theatreLoading, setTheatreLoading] = useState(true);
-  const [theatreError, setTheatreError] = useState(null);
-
   const navigate = useNavigate();
   const location = useLocation();
 
-  const user = location.state?.user || { username: "there" };
-  const displayName = user.username.charAt(0).toUpperCase() + user.username.slice(1);
+  const user =
+    location.state?.user || {
+      username: "there",
+    };
+
+  const displayName =
+    user.username.charAt(0).toUpperCase() +
+    user.username.slice(1);
+
   const greeting = getGreeting(displayName);
 
-  // ── SEARCH FILTER ──
+  // ── SEARCH ──
   const q = searchQuery.toLowerCase().trim();
 
   const filteredMovies = movies.filter(
     (m) =>
       m.title?.toLowerCase().includes(q) ||
-      m.genre_names?.some((g) => g.toLowerCase().includes(q))
+      m.genre_names?.some((g) =>
+        g.toLowerCase().includes(q)
+      )
   );
 
-  const filteredStandup = standup.filter(
+  const filteredStandup = STANDUP_EVENTS.filter(
     (e) =>
-      e.name?.text?.toLowerCase().includes(q) ||
-      e.venue?.address?.city?.toLowerCase().includes(q)
+      e.title?.toLowerCase().includes(q) ||
+      e.city?.toLowerCase().includes(q) ||
+      e.venue?.toLowerCase().includes(q)
   );
 
-  const filteredConcerts = concerts.filter(
+  const filteredConcerts = CONCERT_EVENTS.filter(
     (e) =>
-      e.name?.text?.toLowerCase().includes(q) ||
-      e.venue?.address?.city?.toLowerCase().includes(q)
+      e.title?.toLowerCase().includes(q) ||
+      e.city?.toLowerCase().includes(q) ||
+      e.venue?.toLowerCase().includes(q)
   );
 
-  const filteredTheatre = theatre.filter(
+  const filteredTheatre = THEATRE_EVENTS.filter(
     (e) =>
-      e.name?.text?.toLowerCase().includes(q) ||
-      e.venue?.address?.city?.toLowerCase().includes(q)
+      e.title?.toLowerCase().includes(q) ||
+      e.city?.toLowerCase().includes(q) ||
+      e.venue?.toLowerCase().includes(q)
   );
 
-  // ── SMART NAVBAR SCROLL ──
+  // ── NAVBAR SCROLL ──
   useEffect(() => {
+
     let lastScrollY = window.scrollY;
 
     const handleScroll = () => {
+
       const currentScrollY = window.scrollY;
 
-      // blur background on scroll
       setScrolled(currentScrollY > 10);
 
-      // always show navbar near top
       if (currentScrollY < 80) {
         setShowNavbar(true);
-      }
-      // scrolling down → hide navbar
-      else if (currentScrollY > lastScrollY) {
+      } else if (currentScrollY > lastScrollY) {
         setShowNavbar(false);
-      }
-      // scrolling up → show navbar
-      else {
+      } else {
         setShowNavbar(true);
       }
 
       lastScrollY = currentScrollY;
     };
 
-  window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener(
+      "scroll",
+      handleScroll,
+      { passive: true }
+    );
 
-  return () => {
-    window.removeEventListener("scroll", handleScroll);
-  };
+    return () =>
+      window.removeEventListener(
+        "scroll",
+        handleScroll
+      );
+
   }, []);
 
-  // ── FETCH MOVIES (TMDB) ──
+  // ── FETCH MOVIES ──
   useEffect(() => {
+
     const genreMap = {
-      28: "Action", 12: "Adventure", 16: "Animation", 35: "Comedy",
-      80: "Crime", 18: "Drama", 14: "Fantasy", 27: "Horror",
-      10402: "Musical", 10749: "Romance", 878: "Sci-Fi",
-      53: "Thriller", 10752: "War", 37: "Western",
-      99: "Documentary", 9648: "Mystery", 36: "History",
+      28: "Action",
+      12: "Adventure",
+      16: "Animation",
+      35: "Comedy",
+      80: "Crime",
+      18: "Drama",
+      14: "Fantasy",
+      27: "Horror",
+      10402: "Musical",
+      10749: "Romance",
+      878: "Sci-Fi",
+      53: "Thriller",
+      10752: "War",
+      37: "Western",
+      99: "Documentary",
+      9648: "Mystery",
+      36: "History",
     };
 
     fetch(
       `https://api.themoviedb.org/3/movie/now_playing?api_key=${TMDB_API_KEY}&language=en-US&region=IN&page=1`
     )
       .then((res) => {
-        if (!res.ok) throw new Error("TMDB fetch failed");
+        if (!res.ok)
+          throw new Error("TMDB fetch failed");
+
         return res.json();
       })
+
       .then((data) => {
-        const enriched = data.results.map((m) => ({
-          ...m,
-          genre_names: m.genre_ids.map((id) => genreMap[id]).filter(Boolean).slice(0, 3),
-        }));
+
+        const enriched = data.results.map(
+          (m) => ({
+            ...m,
+            genre_names: m.genre_ids
+              .map((id) => genreMap[id])
+              .filter(Boolean)
+              .slice(0, 3),
+          })
+        );
+
         setMovies(enriched);
         setMoviesLoading(false);
       })
+
       .catch(() => {
-        setMoviesError("Couldn't load movies. Check your TMDB API key.");
+        setMoviesError(
+          "Couldn't load movies. Check your TMDB API key."
+        );
+
         setMoviesLoading(false);
       });
-  }, []);
 
- const fetchEBEvents = (keyword, setter, setLoading, setError) => {
-  const url = `https://api.apify.com/v2/acts/${APIFY_ACTOR_ID}/run-sync-get-dataset-items?token=${APIFY_TOKEN}`;
-
-  fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      search: keyword,
-      location: "Mumbai",
-      maxResults: 20,
-    }),
-  })
-    .then((res) => {
-      if (!res.ok) throw new Error("Apify fetch failed");
-      return res.json();
-    })
-    .then((data) => {
-      setter(data || []);
-      setLoading(false);
-    })
-    .catch(() => {
-      setError("Couldn't load events. Check your Apify setup.");
-      setLoading(false);
-    });
-};
-
-  useEffect(() => {
-    fetchEBEvents("standup comedy", setStandup, setStandupLoading, setStandupError);
-  }, []);
-
-  useEffect(() => {
-    fetchEBEvents("concert music", setConcerts, setConcertsLoading, setConcertsError);
-  }, []);
-
-  useEffect(() => {
-    fetchEBEvents("theatre acting play", setTheatre, setTheatreLoading, setTheatreError);
   }, []);
 
   return (
     <div className="dashboard-page">
 
-      {/* ── NAVBAR ── */}
+      {/* NAVBAR */}
       <nav
-        className={`dash-navbar ${scrolled ? "scrolled" : ""} ${
-          showNavbar ? "nav-visible" : "nav-hidden"
+        className={`dash-navbar ${
+          scrolled ? "scrolled" : ""
+        } ${
+          showNavbar
+            ? "nav-visible"
+            : "nav-hidden"
         }`}
       >
+
         <span
           className="nav-logo"
-          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          onClick={() =>
+            window.scrollTo({
+              top: 0,
+              behavior: "smooth",
+            })
+          }
           style={{ cursor: "pointer" }}
         >
           Lumino.
         </span>
 
-        {/* ── SEARCH BAR ── */}
-        <div className={`nav-search-wrapper ${searchFocused ? "focused" : ""}`}>
-          <svg className="search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
+        {/* SEARCH */}
+        <div
+          className={`nav-search-wrapper ${
+            searchFocused ? "focused" : ""
+          }`}
+        >
+
           <input
             type="text"
             className="nav-search-input"
-            placeholder="Search movies, shows, concerts..."
+            placeholder="Search movies, concerts, shows..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            onFocus={() => setSearchFocused(true)}
-            onBlur={() => setSearchFocused(false)}
+            onChange={(e) =>
+              setSearchQuery(e.target.value)
+            }
+            onFocus={() =>
+              setSearchFocused(true)
+            }
+            onBlur={() =>
+              setSearchFocused(false)
+            }
           />
+
           {searchQuery && (
-            <button className="search-clear" onClick={() => setSearchQuery("")}>✕</button>
+            <button
+              className="search-clear"
+              onClick={() =>
+                setSearchQuery("")
+              }
+            >
+              ✕
+            </button>
           )}
         </div>
 
         <div className="nav-right-group">
-          <div
-            className="nav-dropdown-wrapper"
-            onMouseEnter={() => setCategoryOpen(true)}
-            onMouseLeave={() => setCategoryOpen(false)}
-          >
-            <button className="nav-link">Categories ▾</button>
-            <div className={`dropdown-menu ${categoryOpen ? "open" : ""}`}>
-              <div className="dropdown-inner">
-                <a href="#">🎵 Concerts</a>
-                <a href="#">🎤 Standup Comedy</a>
-                <a href="#">🎬 Movies</a>
-                <a href="#">🎭 Theatre &amp; Plays</a>
-                <a href="#">🎪 Festivals</a>
-                <a href="#">🎸 Open Mic</a>
-                <a href="#">🕺 Club Nights</a>
-                <a href="#">🎨 Art &amp; Exhibitions</a>
-                <a href="#">🏟️ Sports Events</a>
-                <a href="#">🎧 DJ Nights</a>
-              </div>
-            </div>
-          </div>
 
-          <div
-            className="nav-dropdown-wrapper"
-            onMouseEnter={() => setCityOpen(true)}
-            onMouseLeave={() => setCityOpen(false)}
+          <button
+            className="btn btn-outline"
+            onClick={() =>
+              navigate("/auth")
+            }
           >
-            <button className="nav-link">City ▾</button>
-            <div className={`dropdown-menu ${cityOpen ? "open" : ""}`}>
-              <div className="dropdown-inner">
-                <a href="#">📍 Mumbai</a>
-                <a href="#">📍 Delhi</a>
-                <a href="#">📍 Bangalore</a>
-                <a href="#">📍 Hyderabad</a>
-                <a href="#">📍 Chennai</a>
-                <a href="#">📍 Pune</a>
-                <a href="#">📍 Kolkata</a>
-                <a href="#">📍 Ahmedabad</a>
-                <a href="#">📍 Jaipur</a>
-                <a href="#">📍 Goa</a>
-              </div>
-            </div>
-          </div>
-
-          <div className="nav-divider" />
-          <button className="btn btn-outline" onClick={() => navigate("/auth")}>
             Log Out
           </button>
+
         </div>
       </nav>
 
-      {/* ── GREETING ── */}
+      {/* GREETING */}
       <section className="dash-greeting">
-        <h1 className="greeting-text">{greeting}</h1>
+
+        <h1 className="greeting-text">
+          {greeting}
+        </h1>
+
         <p className="greeting-sub">
-          Here&apos;s what&apos;s happening in your city tonight.
+          Here&apos;s what&apos;s happening
+          in your city tonight.
         </p>
+
       </section>
 
-      {/* ── MOVIES ── */}
+      {/* MOVIES */}
       <section className="dash-section">
+
         <div className="section-header">
-          <h2 className="section-title">Now Showing</h2>
-          <button className="see-all-btn">See All ›</button>
+          <h2 className="section-title">
+            Now Showing
+          </h2>
         </div>
+
         {moviesLoading ? (
           <SkeletonRow />
         ) : moviesError ? (
-          <RowError message={moviesError} />
-        ) : filteredMovies.length === 0 ? (
-          <RowError message="No movies match your search." />
+          <RowError
+            message={moviesError}
+          />
         ) : (
           <PaginatedRow
             items={filteredMovies}
-            renderCard={(movie) => <MovieCard key={movie.id} movie={movie} />}
+            renderCard={(movie) => (
+              <MovieCard
+                key={movie.id}
+                movie={movie}
+                user={user}
+              />
+            )}
           />
         )}
       </section>
 
-      {/* ── STANDUP ── */}
+      {/* STANDUP */}
       <section className="dash-section">
+
         <div className="section-header">
-          <h2 className="section-title">Standup Shows Near You</h2>
-          <button className="see-all-btn">See All ›</button>
+          <h2 className="section-title">
+            Standup Shows Near You
+          </h2>
         </div>
-        {standupLoading ? (
-          <SkeletonRow />
-        ) : standupError ? (
-          <RowError message={standupError} />
-        ) : filteredStandup.length === 0 ? (
-          <RowError message="No standup shows match your search." />
-        ) : (
-          <PaginatedRow
-            items={filteredStandup}
-            renderCard={(event) => <EventCard key={event.id} event={event} />}
-          />
-        )}
+
+        <PaginatedRow
+          items={filteredStandup}
+          renderCard={(event) => (
+            <EventCard
+              key={event.id}
+              event={event}
+              user={user}
+            />
+          )}
+        />
+
       </section>
 
-      {/* ── CONCERTS ── */}
+      {/* CONCERTS */}
       <section className="dash-section">
+
         <div className="section-header">
-          <h2 className="section-title">Concerts Happening</h2>
-          <button className="see-all-btn">See All ›</button>
+          <h2 className="section-title">
+            Concerts Happening
+          </h2>
         </div>
-        {concertsLoading ? (
-          <SkeletonRow />
-        ) : concertsError ? (
-          <RowError message={concertsError} />
-        ) : filteredConcerts.length === 0 ? (
-          <RowError message="No concerts match your search." />
-        ) : (
-          <PaginatedRow
-            items={filteredConcerts}
-            renderCard={(event) => <EventCard key={event.id} event={event} />}
-          />
-        )}
+
+        <PaginatedRow
+          items={filteredConcerts}
+          renderCard={(event) => (
+            <EventCard
+              key={event.id}
+              event={event}
+              user={user}
+            />
+          )}
+        />
+
       </section>
 
-      {/* ── THEATRE ── */}
+      {/* THEATRE */}
       <section className="dash-section">
+
         <div className="section-header">
-          <h2 className="section-title">Theatre &amp; Acting</h2>
-          <button className="see-all-btn">See All ›</button>
+          <h2 className="section-title">
+            Theatre & Acting
+          </h2>
         </div>
-        {theatreLoading ? (
-          <SkeletonRow />
-        ) : theatreError ? (
-          <RowError message={theatreError} />
-        ) : filteredTheatre.length === 0 ? (
-          <RowError message="No theatre shows match your search." />
-        ) : (
-          <PaginatedRow
-            items={filteredTheatre}
-            renderCard={(event) => <EventCard key={event.id} event={event} />}
-          />
-        )}
+
+        <PaginatedRow
+          items={filteredTheatre}
+          renderCard={(event) => (
+            <EventCard
+              key={event.id}
+              event={event}
+              user={user}
+            />
+          )}
+        />
+
       </section>
 
-      {/* ── BROWSE CATEGORIES ── */}
+      {/* CATEGORIES */}
       <section className="dash-section">
+
         <div className="section-header">
-          <h2 className="section-title">Browse by Category</h2>
+          <h2 className="section-title">
+            Browse by Category
+          </h2>
         </div>
+
         <div className="category-grid">
           {categories.map((cat) => (
             <button
               key={cat.name}
               className="category-card"
-              onClick={(e) => e.preventDefault()}
             >
-              <span className="category-icon">{cat.icon}</span>
-              <span className="category-name">{cat.name}</span>
+              <span className="category-icon">
+                {cat.icon}
+              </span>
+
+              <span className="category-name">
+                {cat.name}
+              </span>
             </button>
           ))}
         </div>
+
       </section>
 
-      {/* ── FOOTER ── */}
+      {/* FOOTER */}
       <footer>
+
         <div className="footer-left">
-          <span className="footer-brand">Lumino.</span>
+
+          <span className="footer-brand">
+            Lumino.
+          </span>
+
           <span className="footer-email">
-            <a href="mailto:findurgigs.lumino@gmail.com">
-              findurgigs.lumino@gmail.com
-            </a>
+            findurgigs.lumino@gmail.com
           </span>
+
         </div>
-        <div className="footer-socials">
-          <span className="social-icon" title="Instagram (coming soon)">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
-              <circle cx="12" cy="12" r="4" />
-              <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
-            </svg>
-          </span>
-          <span className="social-icon" title="X (coming soon)">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z" />
-            </svg>
-          </span>
-        </div>
+
         <p className="footer-copy">
-          © {new Date().getFullYear()} Lumino. All rights reserved.
+          © {new Date().getFullYear()} Lumino.
+          All rights reserved.
         </p>
+
       </footer>
     </div>
   );
