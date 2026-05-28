@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import "./AuthPage.css";
 import bgImage from '../assets/Login:Signup Page Background - Lumino.png';
+import { useNavigate } from 'react-router-dom';
 
 export default function AuthPage() {
   const [mode, setMode] = useState("login");
@@ -14,6 +15,8 @@ export default function AuthPage() {
   const [showSignupPw, setShowSignupPw] = useState(false);
   const loginPwTimer = useRef(null);
   const signupPwTimer = useRef(null);
+
+  const navigate = useNavigate();
 
   const [loginForm, setLoginForm] = useState({ identifier: "", password: "" });
   const [signupForm, setSignupForm] = useState({
@@ -50,7 +53,6 @@ export default function AuthPage() {
         msg: "> ERROR: All fields are required.",
         type: "err",
       });
-
       return;
     }
 
@@ -74,13 +76,13 @@ export default function AuthPage() {
 
       if (data.success) {
         setLoginSuccess(true);
-
         setLoginStatus({
           msg: `> ${data.message}`,
           type: "ok",
         });
-
-        console.log(data.user);
+        setTimeout(() => {
+          navigate("/dashboard", { state: { user: data.user } });
+        }, 900);
       } else {
         setLoginStatus({
           msg: `> ERROR: ${data.message}`,
@@ -89,9 +91,7 @@ export default function AuthPage() {
       }
     } catch (error) {
       console.error("FULL LOGIN ERROR:", error);
-
       setLoginLoading(false);
-
       setLoginStatus({
         msg: "> ERROR: Cannot connect to server.",
         type: "err",
@@ -107,7 +107,6 @@ export default function AuthPage() {
         msg: "> ERROR: All fields are required.",
         type: "err",
       });
-
       return;
     }
 
@@ -127,11 +126,13 @@ export default function AuthPage() {
 
       if (data.success) {
         setSignupSuccess(true);
-
         setSignupStatus({
           msg: `> ${data.message}`,
           type: "ok",
         });
+        setTimeout(() => {
+          navigate("/dashboard", { state: { user: { username: signupForm.username } } });
+        }, 900);
       } else {
         setSignupStatus({
           msg: `> ERROR: ${data.message}`,
@@ -140,7 +141,6 @@ export default function AuthPage() {
       }
     } catch (error) {
       console.error("FULL SIGNUP ERROR:", error);
-
       setSignupStatus({
         msg: "> ERROR: Cannot connect to server.",
         type: "err",
