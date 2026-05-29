@@ -1,0 +1,336 @@
+:root {
+  --pink: #c0185a;
+  --pink-light: #e0206e;
+  --white: #ffffff;
+  --navy: #0a0f2e;
+}
+
+/* ── PAGE BASE ── */
+.cp-page {
+  min-height: 100vh;
+  background: var(--navy);
+  color: var(--white);
+  font-family: 'DM Sans', sans-serif;
+}
+
+/* ── NAVBAR ── */
+.cp-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
+  display: flex;
+  align-items: center;
+
+  height: 68px;
+  padding: 0 2.5rem;
+
+  background: rgba(10, 15, 46, 0.88);
+  backdrop-filter: blur(18px);
+  border-bottom: 0.5px solid rgba(192, 24, 90, 0.2);
+}
+
+.cp-nav-logo {
+  font-family: 'Playfair Display', serif;
+  font-weight: 900;
+  font-size: 1.5rem;
+
+  color: var(--pink);
+  letter-spacing: -0.02em;
+}
+
+/* ── HEADER ── */
+.cp-header {
+  text-align: center;
+  padding: 3rem 2rem 1.5rem;
+}
+
+.cp-header-icon {
+  font-size: 2.8rem;
+  margin-bottom: 0.5rem;
+  color: var(--pink);
+  filter: drop-shadow(0 0 10px rgba(192, 24, 90, 0.35));
+}
+
+.cp-header-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem;
+  font-weight: 900;
+  margin: 0 0 0.4rem;
+}
+
+.cp-header-sub {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+/* ── BODY ── */
+.cp-body {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.cp-loading,
+.cp-error {
+  text-align: center;
+  padding: 4rem 0;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* ── GRID ── */
+.cp-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+/* ── CARD ── */
+.cp-card {
+  cursor: pointer;
+
+  border-radius: 14px;
+  overflow: hidden;
+
+  background: rgba(255, 255, 255, 0.04);
+  border: 0.5px solid rgba(255, 255, 255, 0.08);
+
+  transition: transform 0.25s ease, border-color 0.25s ease;
+}
+
+.cp-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(192, 24, 90, 0.45);
+}
+
+/* ── POSTER ── */
+.cp-poster {
+  position: relative;
+  aspect-ratio: 2 / 3;
+  background: #0d1535;
+  overflow: hidden;
+}
+
+.cp-poster-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.cp-card:hover .cp-poster-img {
+  transform: scale(1.05);
+}
+
+.cp-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 2.5rem;
+  opacity: 0.3;
+}
+
+/* ── OVERLAY ── */
+.cp-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+
+  padding: 0.6rem;
+
+  background: linear-gradient(
+    to top,
+    rgba(10, 15, 46, 0.95),
+    transparent
+  );
+}
+
+.cp-rating {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* ── DATE BADGE ── */
+.cp-date-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+
+  background: rgba(192, 24, 90, 0.18);
+  border: 0.5px solid rgba(192, 24, 90, 0.4);
+
+  color: var(--white);
+  font-size: 0.7rem;
+
+  padding: 4px 9px;
+  border-radius: 999px;
+
+  backdrop-filter: blur(10px);
+}
+
+/* ── INFO ── */
+.cp-info {
+  padding: 0.7rem 0.8rem 0.9rem;
+}
+
+.cp-title {
+  font-size: 0.83rem;
+  font-weight: 500;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cp-sub {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* ── BACK BUTTON ── */
+.cp-back-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 0 3rem;
+}
+
+.cp-back-btn {
+  background: transparent;
+  border: 1px solid rgba(192, 24, 90, 0.3);
+
+  color: var(--white);
+  padding: 0.65rem 1.8rem;
+
+  border-radius: 10px;
+  cursor: pointer;
+
+  transition: all 0.25s ease;
+}
+
+.cp-back-btn:hover {
+  background: rgba(192, 24, 90, 0.15);
+  border-color: rgba(192, 24, 90, 0.5);
+}
+
+/* ── FOOTER ── */
+.cp-footer {
+  display: flex;
+  justify-content: space-between;
+  padding: 1.5rem 2.5rem;
+
+  border-top: 0.5px solid rgba(255, 255, 255, 0.06);
+}
+.cp-search {
+  margin-left: 1.5rem;
+  flex: 1;
+  max-width: 320px;
+
+  padding: 8px 14px;
+  border-radius: 999px;
+
+  border: 0.5px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+
+  color: white;
+  outline: none;
+}
+
+.cp-search::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.cp-nav-back {
+  margin-left: 1rem;
+
+  padding: 7px 14px;
+  border-radius: 999px;
+
+  background: rgba(192, 24, 90, 0.15);
+  border: 0.5px solid rgba(192, 24, 90, 0.4);
+
+  color: white;
+  cursor: pointer;
+}
+
+/* ── NAVBAR LAYOUT FIX ── */
+.cp-navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2.5rem;
+}
+
+/* center search */
+.cp-nav-center {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+/* right section */
+.cp-nav-right {
+  display: flex;
+  align-items: center;
+}
+
+/* ── SEARCH BAR ── */
+.cp-search {
+  width: 320px;
+  padding: 8px 14px;
+
+  border-radius: 999px;
+  border: 0.5px solid rgba(255, 255, 255, 0.15);
+
+  background: rgba(255, 255, 255, 0.06);
+  color: white;
+
+  outline: none;
+}
+
+.cp-search::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* ── PINK BUTTON (NAV) ── */
+.cp-nav-btn {
+  background: rgba(192, 24, 90, 0.15);
+  border: 1px solid rgba(192, 24, 90, 0.4);
+  color: white;
+
+  padding: 8px 16px;
+  border-radius: 999px;
+
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.cp-nav-btn:hover {
+  background: rgba(192, 24, 90, 0.25);
+  border-color: rgba(192, 24, 90, 0.6);
+}
+
+/* ── BOTTOM BUTTON ── */
+.cp-bottom {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 0 3rem;
+}
+
+.cp-bottom-btn {
+  background: rgba(192, 24, 90, 0.15);
+  border: 1px solid rgba(192, 24, 90, 0.4);
+  color: white;
+
+  padding: 10px 22px;
+  border-radius: 999px;
+
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.cp-bottom-btn:hover {
+  background: rgba(192, 24, 90, 0.25);
+  border-color: rgba(192, 24, 90, 0.6);
+}
