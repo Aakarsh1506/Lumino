@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import "./AuthPage.css";
-import bgImage from '../assets/Login:Signup Page Background - Lumino.png';
+import bgImage from '../assets/Login Page Background 2 - Lumino.png';
 import { useNavigate } from 'react-router-dom';
 
 export default function AuthPage() {
@@ -176,7 +176,13 @@ export default function AuthPage() {
       <div className="auth-bg" style={{ backgroundImage: `url(${bgImage})` }} />
       <div className="auth-overlay" />
 
-      <div className="auth-logo">Lumino.</div>
+      <div
+          className="auth-logo"
+          style={{ cursor: "pointer" }}
+          onClick={() => navigate("/")}
+      >
+        Lumino.
+      </div>
 
       <div className="auth-card">
 
