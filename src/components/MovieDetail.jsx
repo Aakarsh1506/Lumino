@@ -189,7 +189,19 @@ export default function MovieDetail() {
               {runtime && <span className="detail-tag">{runtime}</span>}
             </div>
 
-            <button className="book-btn">Book Tickets</button>
+            <button
+              className="book-btn"
+              onClick={() =>
+                navigate("/book-tickets", {
+                  state: {
+                    movie,
+                    user,
+                  },
+                })
+              }
+            >
+              Book Tickets
+            </button>
           </div>
         </div>
       </div>
