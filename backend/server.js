@@ -21,6 +21,23 @@ app.get("/test", (req, res) => {
     message: "Backend working",
   });
 });
+app.get("/db-test", (req, res) => {
+  db.query("SELECT 1", (err, result) => {
+    if (err) {
+      console.log("DB TEST ERROR:", err);
+
+      return res.status(500).json({
+        success: false,
+        error: err.message,
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Database connected successfully",
+    });
+  });
+});
 
 // ================= SIGNUP =================
 
