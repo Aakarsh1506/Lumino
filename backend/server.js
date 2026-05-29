@@ -7,7 +7,7 @@ const db = require("./db");
 
 const app = express();
 
-// ================= SIMPLE CORS =================
+// ================= CORS =================
 
 app.use(cors());
 
@@ -41,37 +41,70 @@ app.post("/signup", async (req, res) => {
       });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // CHECK IF USER EXISTS
 
-    const sql = `
-      INSERT INTO users
-      (full_name, username, email, phone, password)
-      VALUES (?, ?, ?, ?, ?)
+    const checkUserSql = `
+      SELECT * FROM users
+      WHERE email = ? OR username = ?
     `;
 
     db.query(
-      sql,
-      [
-        fullName,
-        username,
-        email,
-        phone,
-        hashedPassword,
-      ],
-      (err, result) => {
-        if (err) {
-          console.log("SIGNUP ERROR:", err);
+      checkUserSql,
+      [email, username],
+      async (checkErr, checkResult) => {
+        if (checkErr) {
+          console.log("CHECK USER ERROR:", checkErr);
 
           return res.status(500).json({
             success: false,
-            message: "User already exists or database error",
+            message: "Database error",
           });
         }
 
-        res.json({
-          success: true,
-          message: "Signup successful",
-        });
+        if (checkResult.length > 0) {
+          return res.status(400).json({
+            success: false,
+            message: "User already exists",
+          });
+        }
+
+        // HASH PASSWORD
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // INSERT USER
+
+        const insertSql = `
+          INSERT INTO users
+          (full_name, username, email, phone, password)
+          VALUES (?, ?, ?, ?, ?)
+        `;
+
+        db.query(
+          insertSql,
+          [
+            fullName,
+            username,
+            email,
+            phone,
+            hashedPassword,
+          ],
+          (insertErr, result) => {
+            if (insertErr) {
+              console.log("SIGNUP ERROR:", insertErr);
+
+              return res.status(500).json({
+                success: false,
+                message: "Signup failed",
+              });
+            }
+
+            res.json({
+              success: true,
+              message: "Signup successful",
+            });
+          }
+        );
       }
     );
   } catch (error) {
@@ -167,6 +200,8 @@ app.get("/users", (req, res) => {
 
 // ================= START SERVER =================
 
-app.listen(process.env.PORT, () => {
-  console.log(`Server running on port ${process.env.PORT}`);
+const PORT = process.env.PORT || 8000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
