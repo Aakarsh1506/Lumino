@@ -374,8 +374,6 @@ body {
   max-width: 900px;
 }
 
-
-
 .category-card:hover {
   transform: scale(1.07);
   background: rgba(192, 24, 90, 0.12);
