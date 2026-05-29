@@ -60,7 +60,7 @@ export default function AuthPage() {
 
     try {
       const response = await fetch(
-        "http://localhost:8000/login",
+        "https://lumino-backend-04ko.onrender.com/login",
         {
           method: "POST",
           headers: {
@@ -112,7 +112,7 @@ export default function AuthPage() {
 
     try {
       const response = await fetch(
-        "http://localhost:8000/signup",
+        "https://lumino-backend-04ko.onrender.com/signup",
         {
           method: "POST",
           headers: {
